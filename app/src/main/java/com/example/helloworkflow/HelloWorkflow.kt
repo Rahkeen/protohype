@@ -5,7 +5,11 @@ import com.example.helloworkflow.HelloWorkflow.Rendering
 import com.example.helloworkflow.HelloWorkflow.State
 import com.example.helloworkflow.HelloWorkflow.State.Goodbye
 import com.example.helloworkflow.HelloWorkflow.State.Hello
-import com.squareup.workflow.*
+import com.squareup.workflow.RenderContext
+import com.squareup.workflow.Snapshot
+import com.squareup.workflow.StatefulWorkflow
+import com.squareup.workflow.WorkflowAction
+import com.squareup.workflow.parse
 
 object HelloWorkflow : StatefulWorkflow<Unit, State, Nothing, Rendering>() {
     enum class State {

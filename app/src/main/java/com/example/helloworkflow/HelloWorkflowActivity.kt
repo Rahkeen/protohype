@@ -2,17 +2,22 @@ package com.example.helloworkflow
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.example.todolist.TodoListLayoutRunner
+import com.example.todolist.TodoListWorkflow
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.setContentWorkflow
 
 class HelloWorkflowActivity : AppCompatActivity() {
-    private val viewRegistry = ViewRegistry(HelloLayoutRunner)
+    private val viewRegistry = ViewRegistry(
+        HelloLayoutRunner,
+        TodoListLayoutRunner
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentWorkflow(viewRegistry) {
-            WorkflowRunner.Config(HelloWorkflow, Unit)
+            WorkflowRunner.Config(TodoListWorkflow, Unit)
         }
     }
 

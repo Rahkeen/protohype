@@ -13,30 +13,32 @@ import com.squareup.workflow.ui.LayoutRunner
 import com.squareup.workflow.ui.LayoutRunner.Companion.bind
 import com.squareup.workflow.ui.ViewBinding
 
-class TodoListLayoutRunner(view: View): LayoutRunner<TodoList> {
+class TodoListLayoutRunner(view: View): LayoutRunner<TodoListRendering> {
 
     private val title = view.findViewById<TextView>(R.id.todolist_title)
     private val content = view.findViewById<RecyclerView>(R.id.todolist_content)
 
-    private val todoListAdapter = TodoListContentAdapter(emptyList())
+    private val todoListAdapter = TodoListContentAdapter(TodoListRendering.empty())
 
     init {
         content.adapter = todoListAdapter
         content.layoutManager = LinearLayoutManager(view.context)
     }
 
-    override fun showRendering(rendering: TodoList, containerHints: ContainerHints) {
-        title.text = rendering.title
-        todoListAdapter.items = rendering.todos
-        todoListAdapter.notifyDataSetChanged()
+    override fun showRendering(rendering: TodoListRendering, containerHints: ContainerHints) {
+        title.text = rendering.list.title
+        todoListAdapter.updateRendering(rendering)
     }
 
-    companion object : ViewBinding<TodoList> by bind(
+    companion object : ViewBinding<TodoListRendering> by bind(
         R.layout.todolist_layout, ::TodoListLayoutRunner
     )
 }
 
-class TodoListContentAdapter(var items: List<Todo>): RecyclerView.Adapter<TodoListRowViewHolder>() {
+class TodoListContentAdapter(private var rendering: TodoListRendering) : RecyclerView.Adapter<TodoListRowViewHolder>() {
+
+    private val items: List<Todo>
+        get() = rendering.list.todos
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoListRowViewHolder {
         val view = LayoutInflater
@@ -51,7 +53,12 @@ class TodoListContentAdapter(var items: List<Todo>): RecyclerView.Adapter<TodoLi
     }
 
     override fun onBindViewHolder(holder: TodoListRowViewHolder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(items[position], rendering.todoCompleted)
+    }
+
+    fun updateRendering(newRendering: TodoListRendering) {
+        rendering = newRendering
+        notifyDataSetChanged()
     }
 }
 
@@ -60,8 +67,11 @@ class TodoListRowViewHolder(view: View): RecyclerView.ViewHolder(view) {
     private val description = view.findViewById<TextView>(R.id.todolist_row_description)
     private val checkbox = view.findViewById<CheckBox>(R.id.todolist_row_checkbox)
 
-    fun bind(data: Todo) {
+    fun bind(data: Todo, action: (Int) -> Unit) {
         description.text = data.description
         checkbox.isChecked = data.completed
+        checkbox.setOnCheckedChangeListener { _, _ ->
+            action(data.index)
+        }
     }
 }

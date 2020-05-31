@@ -2,8 +2,8 @@ package com.example.helloworkflow
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.todolist.TodoListLayoutRunner
-import com.example.todolist.TodoListWorkflow
+import com.example.todolist.view.TodoListLayoutRunner
+import com.example.todolist.domain.TodoListWorkflow
 import com.squareup.workflow.ui.ViewRegistry
 import com.squareup.workflow.ui.WorkflowRunner
 import com.squareup.workflow.ui.setContentWorkflow

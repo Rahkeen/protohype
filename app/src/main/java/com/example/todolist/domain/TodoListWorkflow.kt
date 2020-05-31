@@ -1,4 +1,4 @@
-package com.example.todolist
+package com.example.todolist.domain
 
 import android.util.Log
 import com.squareup.workflow.RenderContext
@@ -65,7 +65,14 @@ object TodoListWorkflow : StatefulWorkflow<Unit, TodoList, Nothing, TodoListRend
     override fun render(props: Unit, state: TodoList, context: RenderContext<TodoList, Nothing>): TodoListRendering {
         return TodoListRendering(
             list = state,
-            todoCompleted = { context.actionSink.send(TodoAction.DoneClicked(it, state)) }
+            todoCompleted = {
+                context.actionSink.send(
+                    TodoAction.DoneClicked(
+                        it,
+                        state
+                    )
+                )
+            }
         ).also {
             Log.d("TodoListWorkflow", it.toString())
         }

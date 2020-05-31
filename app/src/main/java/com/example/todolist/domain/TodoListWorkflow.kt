@@ -5,6 +5,7 @@ import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.WorkflowAction
+import com.squareup.workflow.WorkflowAction.Updater
 
 data class TodoList(
     val title: String,
@@ -13,13 +14,15 @@ data class TodoList(
 
 data class Todo(
     val index: Int,
-    val description: String,
+    val description: String = "Untitled",
     val completed: Boolean = false
 )
 
 data class TodoListRendering(
     val list: TodoList,
-    val todoCompleted: (index: Int) -> Unit
+    val todoCompleted: (index: Int) -> Unit,
+    val todoEdited: (index: Int, text: String) -> Unit,
+    val todoAdded: () -> Unit
 ) {
     companion object {
         fun empty() : TodoListRendering {
@@ -28,37 +31,42 @@ data class TodoListRendering(
                     title = "Title",
                     todos = emptyList()
                 ),
-                todoCompleted = {}
+                todoCompleted = {},
+                todoEdited = {_,_ -> },
+                todoAdded = {}
             )
         }
     }
 }
 
 sealed class TodoAction: WorkflowAction<TodoList, Nothing> {
+    class CheckboxTapped(val index: Int, val list: TodoList): TodoAction()
+    class DescriptionEdited(val index: Int, val text: String, val list: TodoList): TodoAction()
+    class TodoAdded(val list: TodoList): TodoAction()
 
-    override fun WorkflowAction.Updater<TodoList, Nothing>.apply() {
-        when (this@TodoAction) {
-            is DoneClicked -> {
-                nextState = currentList.copy(
-                    todos = currentList.todos.mapIndexed { idx, todo ->
-                        if (idx == index) todo.copy(completed = !todo.completed) else todo
-                    }
-                )
+    override fun Updater<TodoList, Nothing>.apply() {
+        nextState = when (this@TodoAction) {
+            is CheckboxTapped -> {
+                list.updateRow(index) { copy(completed = !completed) }
+            }
+            is DescriptionEdited -> {
+                list.updateRow(index) { copy(description = text) }
+            }
+            is TodoAdded -> {
+                val todo = Todo(list.todos.size)
+                val updatedTodos = list.todos.toMutableList().apply {
+                    add(todo)
+                }
+                list.copy(todos = updatedTodos)
             }
         }
     }
-
-    class DoneClicked(val index: Int, val currentList: TodoList): TodoAction()
 }
 
 object TodoListWorkflow : StatefulWorkflow<Unit, TodoList, Nothing, TodoListRendering>() {
     override fun initialState(props: Unit, snapshot: Snapshot?): TodoList {
         return TodoList(
-            title = "Groceries",
-            todos = listOf(
-                Todo(0, "Apples"),
-                Todo(1, "Oranges")
-            )
+            title = "Groceries"
         )
     }
 
@@ -67,10 +75,24 @@ object TodoListWorkflow : StatefulWorkflow<Unit, TodoList, Nothing, TodoListRend
             list = state,
             todoCompleted = {
                 context.actionSink.send(
-                    TodoAction.DoneClicked(
+                    TodoAction.CheckboxTapped(
                         it,
                         state
                     )
+                )
+            },
+            todoEdited = { index, text ->
+               context.actionSink.send(
+                   TodoAction.DescriptionEdited(
+                       index,
+                       text,
+                       state
+                   )
+               )
+            },
+            todoAdded = {
+                context.actionSink.send(
+                    TodoAction.TodoAdded(state)
                 )
             }
         ).also {
@@ -81,4 +103,16 @@ object TodoListWorkflow : StatefulWorkflow<Unit, TodoList, Nothing, TodoListRend
     override fun snapshotState(state: TodoList): Snapshot {
         return Snapshot.EMPTY
     }
+}
+
+private fun TodoList.updateRow(
+    index: Int,
+    block: Todo.() -> Todo
+): TodoList {
+    return copy(
+        todos = todos.withIndex()
+            .map { (i, value) ->
+                if (i == index) value.block() else value
+            }
+    )
 }

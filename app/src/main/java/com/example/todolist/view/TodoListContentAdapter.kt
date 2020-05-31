@@ -24,7 +24,7 @@ class TodoListContentAdapter(private var rendering: TodoListRendering) : Recycle
     }
 
     override fun onBindViewHolder(holder: TodoListRowViewHolder, position: Int) {
-        holder.bind(items[position], rendering.todoCompleted)
+        holder.bind(items[position], rendering.todoCompleted, rendering.todoEdited)
     }
 
     fun updateRendering(newRendering: TodoListRendering) {

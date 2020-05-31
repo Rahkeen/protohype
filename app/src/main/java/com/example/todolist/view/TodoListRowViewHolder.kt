@@ -7,30 +7,17 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.helloworkflow.R
 import com.example.todolist.domain.Todo
+import com.google.android.material.textfield.TextInputLayout
 
 class TodoListRowViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
-    private val description = view.findViewById<TextView>(R.id.todolist_row_description)
+    private val description = view.findViewById<TextInputLayout>(R.id.todolist_row_description_layout)
     private val checkbox = view.findViewById<CheckBox>(R.id.todolist_row_checkbox)
 
     fun bind(data: Todo, action: (Int) -> Unit) {
-        description.text = data.description
+        description.editText?.setText(data.description)
         checkbox.isChecked = data.completed
-        if (data.completed) {
-            description.setTextColor(
-                ContextCompat.getColor(
-                    itemView.context,
-                    R.color.gray
-                )
-            )
-        } else {
-            description.setTextColor(
-                ContextCompat.getColor(
-                    itemView.context,
-                    R.color.black
-                )
-            )
-        }
+        description.isEnabled = !data.completed
         checkbox.setOnCheckedChangeListener { _, _ ->
             action(data.index)
         }

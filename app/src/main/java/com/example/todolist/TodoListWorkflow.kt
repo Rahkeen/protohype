@@ -35,6 +35,7 @@ data class TodoListRendering(
 }
 
 sealed class TodoAction: WorkflowAction<TodoList, Nothing> {
+
     override fun WorkflowAction.Updater<TodoList, Nothing>.apply() {
         when (this@TodoAction) {
             is DoneClicked -> {

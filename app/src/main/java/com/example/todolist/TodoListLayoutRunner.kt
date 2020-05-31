@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.helloworkflow.R
@@ -70,6 +71,11 @@ class TodoListRowViewHolder(view: View): RecyclerView.ViewHolder(view) {
     fun bind(data: Todo, action: (Int) -> Unit) {
         description.text = data.description
         checkbox.isChecked = data.completed
+        if (data.completed) {
+            description.setTextColor(ContextCompat.getColor(itemView.context, R.color.gray))
+        } else {
+            description.setTextColor(ContextCompat.getColor(itemView.context, R.color.black))
+        }
         checkbox.setOnCheckedChangeListener { _, _ ->
             action(data.index)
         }

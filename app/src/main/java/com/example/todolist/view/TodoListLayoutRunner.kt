@@ -18,8 +18,7 @@ class TodoListLayoutRunner(view: View): LayoutRunner<TodoListRendering> {
     private val content = view.findViewById<RecyclerView>(R.id.todolist_content)
     private val addButton = view.findViewById<FloatingActionButton>(R.id.todolist_add_button)
 
-    private val todoListAdapter =
-        TodoListContentAdapter(TodoListRendering.empty())
+    private val todoListAdapter = TodoListContentAdapter(TodoListRendering.empty())
 
     init {
         content.adapter = todoListAdapter

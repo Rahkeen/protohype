@@ -3,29 +3,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="8dp">
+    android:layout_height="wrap_content">
 
-    <com.google.android.material.textfield.TextInputLayout
+    <EditText
         android:id="@+id/todolist_row_description_layout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_textfield"
         android:hint="Todo"
-        app:boxBackgroundColor="@color/white"
+        android:inputType="text"
+        android:maxLines="1"
+        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/todolist_row_checkbox"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/todolist_row_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="Apples" />
-
-    </com.google.android.material.textfield.TextInputLayout>
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="Autofill" />
 
     <CheckBox
         android:id="@+id/todolist_row_checkbox"

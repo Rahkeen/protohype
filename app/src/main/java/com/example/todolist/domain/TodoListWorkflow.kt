@@ -25,24 +25,24 @@ data class TodoListRendering(
     val todoAdded: () -> Unit
 ) {
     companion object {
-        fun empty() : TodoListRendering {
+        fun empty(): TodoListRendering {
             return TodoListRendering(
                 list = TodoList(
                     title = "Title",
                     todos = emptyList()
                 ),
                 todoCompleted = {},
-                todoEdited = {_,_ -> },
+                todoEdited = { _, _ -> },
                 todoAdded = {}
             )
         }
     }
 }
 
-sealed class TodoAction: WorkflowAction<TodoList, Nothing> {
-    class CheckboxTapped(val index: Int, val list: TodoList): TodoAction()
-    class DescriptionEdited(val index: Int, val text: String, val list: TodoList): TodoAction()
-    class TodoAdded(val list: TodoList): TodoAction()
+sealed class TodoAction : WorkflowAction<TodoList, Nothing> {
+    class CheckboxTapped(val index: Int, val list: TodoList) : TodoAction()
+    class DescriptionEdited(val index: Int, val text: String, val list: TodoList) : TodoAction()
+    class TodoAdded(val list: TodoList) : TodoAction()
 
     override fun Updater<TodoList, Nothing>.apply() {
         nextState = when (this@TodoAction) {
@@ -64,9 +64,10 @@ sealed class TodoAction: WorkflowAction<TodoList, Nothing> {
 }
 
 object TodoListWorkflow : StatefulWorkflow<Unit, TodoList, Nothing, TodoListRendering>() {
+
     override fun initialState(props: Unit, snapshot: Snapshot?): TodoList {
         return TodoList(
-            title = "Groceries"
+            title = "Todos"
         )
     }
 
@@ -82,13 +83,13 @@ object TodoListWorkflow : StatefulWorkflow<Unit, TodoList, Nothing, TodoListRend
                 )
             },
             todoEdited = { index, text ->
-               context.actionSink.send(
-                   TodoAction.DescriptionEdited(
-                       index,
-                       text,
-                       state
-                   )
-               )
+                context.actionSink.send(
+                    TodoAction.DescriptionEdited(
+                        index,
+                        text,
+                        state
+                    )
+                )
             },
             todoAdded = {
                 context.actionSink.send(

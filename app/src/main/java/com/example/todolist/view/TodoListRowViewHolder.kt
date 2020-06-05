@@ -29,8 +29,9 @@ class TodoListRowViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         disposables.clear()
         description.removeTextChangedListener(textWatcher)
         description.setText(data.description)
+        description.setSelection(data.description.length)
         description.addTextChangedListener(textWatcher)
-        textWatcher.observeTextChanges().subscribe {
+        textWatcher.textChanges().subscribe {
             editAction(data.index, it)
         }.also {
             disposables.add(it)

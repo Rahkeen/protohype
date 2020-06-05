@@ -55,9 +55,11 @@ sealed class TodoAction : WorkflowAction<TodoList, Nothing> {
                 nextState.updateRow(index) { copy(description = text) }
             }
             is TodoAdded -> {
-                val todo = Todo(nextState.todos.size)
-                val updatedTodos = nextState.todos.toMutableList().apply { add(todo) }
-                nextState.copy(todos = updatedTodos)
+                nextState.copy(
+                    todos = nextState.todos
+                        .toMutableList()
+                        .apply { add(Todo(nextState.todos.size)) }
+                )
             }
         }
     }

@@ -6,6 +6,7 @@ import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
 import com.squareup.workflow.WorkflowAction
 import com.squareup.workflow.WorkflowAction.Updater
+import java.util.UUID
 
 data class TodoList(
     val title: String,
@@ -14,6 +15,7 @@ data class TodoList(
 
 data class Todo(
     val index: Int,
+    val id: UUID = UUID.randomUUID(),
     val description: String = "Untitled",
     val completed: Boolean = false
 )
@@ -40,24 +42,22 @@ data class TodoListRendering(
 }
 
 sealed class TodoAction : WorkflowAction<TodoList, Nothing> {
-    class CheckboxTapped(val index: Int, val list: TodoList) : TodoAction()
-    class DescriptionEdited(val index: Int, val text: String, val list: TodoList) : TodoAction()
-    class TodoAdded(val list: TodoList) : TodoAction()
+    class CheckboxTapped(val index: Int) : TodoAction()
+    class DescriptionEdited(val index: Int, val text: String) : TodoAction()
+    object TodoAdded : TodoAction()
 
     override fun Updater<TodoList, Nothing>.apply() {
         nextState = when (this@TodoAction) {
             is CheckboxTapped -> {
-                list.updateRow(index) { copy(completed = !completed) }
+                nextState.updateRow(index) { copy(completed = !completed) }
             }
             is DescriptionEdited -> {
-                list.updateRow(index) { copy(description = text) }
+                nextState.updateRow(index) { copy(description = text) }
             }
             is TodoAdded -> {
-                val todo = Todo(list.todos.size)
-                val updatedTodos = list.todos.toMutableList().apply {
-                    add(todo)
-                }
-                list.copy(todos = updatedTodos)
+                val todo = Todo(nextState.todos.size)
+                val updatedTodos = nextState.todos.toMutableList().apply { add(todo) }
+                nextState.copy(todos = updatedTodos)
             }
         }
     }
@@ -76,24 +76,20 @@ object TodoListWorkflow : StatefulWorkflow<Unit, TodoList, Nothing, TodoListRend
             list = state,
             todoCompleted = {
                 context.actionSink.send(
-                    TodoAction.CheckboxTapped(
-                        it,
-                        state
-                    )
+                    TodoAction.CheckboxTapped(it)
                 )
             },
             todoEdited = { index, text ->
                 context.actionSink.send(
                     TodoAction.DescriptionEdited(
                         index,
-                        text,
-                        state
+                        text
                     )
                 )
             },
             todoAdded = {
                 context.actionSink.send(
-                    TodoAction.TodoAdded(state)
+                    TodoAction.TodoAdded
                 )
             }
         ).also {
@@ -106,14 +102,13 @@ object TodoListWorkflow : StatefulWorkflow<Unit, TodoList, Nothing, TodoListRend
     }
 }
 
-private fun TodoList.updateRow(
+fun TodoList.updateRow(
     index: Int,
     block: Todo.() -> Todo
 ): TodoList {
     return copy(
-        todos = todos.withIndex()
-            .map { (i, value) ->
-                if (i == index) value.block() else value
-            }
+        todos = todos.map { todo ->
+            if (todo.index == index) todo.block() else todo
+        }
     )
 }

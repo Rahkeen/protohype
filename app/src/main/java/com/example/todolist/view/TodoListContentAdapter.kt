@@ -26,12 +26,11 @@ class TodoListContentAdapter(private var rendering: TodoListRendering) : Recycle
     }
 
     override fun onBindViewHolder(holder: TodoListRowViewHolder, position: Int) {
-        holder.editAction = {_,_ -> }
         holder.bind(
             items[position],
-            rendering.todoCompleted
+            rendering.todoCompleted,
+            rendering.todoEdited
         )
-        holder.editAction = rendering.todoEdited
     }
 
     fun updateRendering(newRendering: TodoListRendering) {
@@ -61,9 +60,7 @@ class TodoListContentAdapter(private var rendering: TodoListRendering) : Recycle
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             val oldItem = oldRendering.list.todos[oldItemPosition]
             val newItem = newRendering.list.todos[newItemPosition]
-
             return oldItem == newItem
         }
-
     }
 }

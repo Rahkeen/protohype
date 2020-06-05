@@ -4,8 +4,6 @@ import android.util.Log
 import com.squareup.workflow.RenderContext
 import com.squareup.workflow.Snapshot
 import com.squareup.workflow.StatefulWorkflow
-import com.squareup.workflow.WorkflowAction
-import com.squareup.workflow.WorkflowAction.Updater
 import java.util.UUID
 
 data class TodoList(
@@ -22,9 +20,7 @@ data class Todo(
 
 data class TodoListRendering(
     val list: TodoList,
-    val todoCompleted: (index: Int) -> Unit,
-    val todoEdited: (index: Int, text: String) -> Unit,
-    val todoAdded: () -> Unit
+    val action: (TodoAction) -> Unit
 ) {
     companion object {
         fun empty(): TodoListRendering {
@@ -33,34 +29,8 @@ data class TodoListRendering(
                     title = "Title",
                     todos = emptyList()
                 ),
-                todoCompleted = {},
-                todoEdited = { _, _ -> },
-                todoAdded = {}
+                action = {}
             )
-        }
-    }
-}
-
-sealed class TodoAction : WorkflowAction<TodoList, Nothing> {
-    class CheckboxTapped(val index: Int) : TodoAction()
-    class DescriptionEdited(val index: Int, val text: String) : TodoAction()
-    object TodoAdded : TodoAction()
-
-    override fun Updater<TodoList, Nothing>.apply() {
-        nextState = when (this@TodoAction) {
-            is CheckboxTapped -> {
-                nextState.updateRow(index) { copy(completed = !completed) }
-            }
-            is DescriptionEdited -> {
-                nextState.updateRow(index) { copy(description = text) }
-            }
-            is TodoAdded -> {
-                nextState.copy(
-                    todos = nextState.todos
-                        .toMutableList()
-                        .apply { add(Todo(nextState.todos.size)) }
-                )
-            }
         }
     }
 }
@@ -76,23 +46,8 @@ object TodoListWorkflow : StatefulWorkflow<Unit, TodoList, Nothing, TodoListRend
     override fun render(props: Unit, state: TodoList, context: RenderContext<TodoList, Nothing>): TodoListRendering {
         return TodoListRendering(
             list = state,
-            todoCompleted = {
-                context.actionSink.send(
-                    TodoAction.CheckboxTapped(it)
-                )
-            },
-            todoEdited = { index, text ->
-                context.actionSink.send(
-                    TodoAction.DescriptionEdited(
-                        index,
-                        text
-                    )
-                )
-            },
-            todoAdded = {
-                context.actionSink.send(
-                    TodoAction.TodoAdded
-                )
+            action = {
+                context.actionSink.send(it)
             }
         ).also {
             Log.d("TodoListWorkflow", it.toString())
